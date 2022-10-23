@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-project (cs211-lab2)
+project (UCRCS211-Project2)
 
 
 add_subdirectory(include)
