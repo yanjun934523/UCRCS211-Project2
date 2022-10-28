@@ -24,7 +24,7 @@
 int mydgetrf(double *A, int *ipiv, int n) 
 {
     /* add your code here */
-    unsigned i = 0, j = 0, k = 0;
+    unsigned i = 0, j = 0, k = 0, t = 0;
     int maxind;
     double MAX;
     double* tempA = (double*)malloc(n * sizeof(double));
@@ -32,7 +32,7 @@ int mydgetrf(double *A, int *ipiv, int n)
     for (i = 0; i < n; i++) {
         MAX = fabs(A[i * n + i]);
         maxind = i;
-        for (unsigned t = i + 1; t < n; t++) {
+        for (t = i + 1; t < n; t++) {
             if (fabs(A[t * n + i]) > MAX) { 
                 MAX = fabs(A[t * n + i]);
                 maxind = t;
@@ -40,9 +40,8 @@ int mydgetrf(double *A, int *ipiv, int n)
         }
 
         if (MAX == 0) {
-            return 0;
+            return -1;
         }
-
         else {
             if (maxind != i) {
                 int temp = ipiv[i];
@@ -143,19 +142,19 @@ void mydgemm(double *A, double *B, double *C, int n, int i, int j, int k, int b)
     /* In fact this function won't be directly called in the tester code, so you can modify the declaration (parameter list) of mydgemm() if needed. 
     /* you may copy the code from the optimal() function or any of the other functions in your lab1 code (optimized code recommended).*/
     /* add your code here */
-    int i, j, k;
-    for (i = 0; i < n; i += 2) {
-        for (j = 0; j < n; j += 2) {
-            register int t = i * n + j;
+   /* int i_1, j_1, k_1;
+    for (i_1 = 0; i_1 < n; i_1 += 2) {
+        for (j_1 = 0; j_1 < n; j_1 += 2) {
+            register int t = i_1 * n + j_1;
             register int tt = t + n;
             register double c00 = C[t];
             register double c01 = C[t + 1];
             register double c10 = C[tt];
             register double c11 = C[tt + 1];
-            for (k = 0; k < n; k += 2) {
-                register int ta = i * n + k;
+            for (k_1 = 0; k_1 < n; k_1 += 2) {
+                register int ta = i_1 * n + k_1;
                 register int tta = ta + n;
-                register int tb = k * n + j;
+                register int tb = k_1 * n + j_1;
                 register int ttb = tb + n;
                 register double a00 = A[ta];
                 register double a01 = A[ta + 1];
@@ -175,7 +174,8 @@ void mydgemm(double *A, double *B, double *C, int n, int i, int j, int k, int b)
             C[tt] = c10;
             C[tt + 1] = c11;
         }
-    }
+    }*/
+    return;
 }
 
 /**
@@ -208,61 +208,7 @@ void mydgemm(double *A, double *B, double *C, int n, int i, int j, int k, int b)
  **/
 int mydgetrf_block(double *A, int *ipiv, int n, int b) 
 {
-    unsigned i = 0, j = 0, k = 0;
-    int maxind;
-    int ib;
-    double MAX;
-    double* tempA = (double*)malloc(n * sizeof(double)); 
-
-    for (ib = 0; ib < n; ib += b) {
-        for (i = ib; i < ib + b; i++) {
-            MAX = fabs(A[i * n + i]);
-            maxind = i;
-            for (j = i + 1; j < n; j++) {
-                if (fabs(A[j * n + i]) > max) {
-                    MAX = fabs(A[j * n + i]);
-                    maxind = j;
-                }
-            }
-      
-            if (MAX == 0) {
-                return 0;
-            }
-            else {
-                if (maxind != i) {
-                    int temp = ipiv[i];
-                    ipiv[i] = ipiv[maxind];
-                    ipiv[maxind] = temp;
-                    memcpy(tempA, A + i * n, n * sizeof(double));
-                    memcpy(A + i * n, A + maxind * n, n * sizeof(double));
-                    memcpy(A + maxind * n, tempA, n * sizeof(double));
-                }
-            }
-            for (unsigned t  = i + 1; j < n; j++) {
-                A[t * n + i] = A[t * n + i] / A[i * n + i];
-                for (k = i + 1; k < ib + b; k++) {
-                    A[t * n + k] -= A[t * n + i] * A[i * n + k];
-                }
-            }
-        }
-        
-        for (i = ib; i < ib + b; i++) {
-            for (j = ib + b; j < n; j++) { 
-                double sum = 0.0;
-                for (k = ib; k < i; k++) {
-                    sum += A[i * n + k] * A[k * n + j];
-                }
-                A[i * n + j] -= sum;
-            }
-        }
-
- 
-        for (i = ib + b; i < n; i += b) {
-            for (j = ib + b; j < n; j += b) {
-                mydgemm(A, A, A, n, i, j, ib, b);
-            }
-        }
-    }
+    
     return 0;
 }
 
