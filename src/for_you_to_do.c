@@ -95,31 +95,30 @@ int mydgetrf(double *A, int *ipiv, int n)
 void mydtrsv(char UPLO, double *A, double *B, int n, int *ipiv)
 {
     /* add your code here */
-    int i = 0, j = 0, k = 0;
+    int i = 0, j = 0;
     double* y = (double*)malloc(n * sizeof(double)); 
 
-    if (UPLO == 'L') {
-        y[0] = B[ipiv[0]];
+    if (UPLO == 'L') { 
+        y[0] = B[ipiv[0]]; 
         for (i = 1; i < n; i++) {
-            y[i] = B[ipiv[i]];
-        }
-        for (j = 0; j < n; j++) {
-            double sum = y[i];
-            for (k = 0; k < j; k++) {
-                sum -= B[k] * A[j * n + k];
+            double sum = 0.0;
+            for (j = 0; j < i; j++) {  
+                sum += A[i * n + j] * y[j];
             }
-            B[j] = sum;
+            y[i] = B[ipiv[i]] - sum;
         }
     }
     if (UPLO == 'U') {
-        for (i = n - 1; i >= 0; i--) {
-            double sum = B[i];
-            for (j = n - 1; j > i; j--) {
-                sum -= B[j] * A[i * n + j];
+        y[n - 1] = B[n - 1] / A[n * n - 1];
+        for (i = n - 2; i >= 0; i--) { 
+            double sum = 0.0;
+            for (j = i + 1; j < n; j++) {
+                sum += A[i * n + j] * y[j];
             }
-            B[i] = sum / A[i * n + i];
+            y[i] = (B[i] - sum) / A[i * n + i];
         }
     }
+    memcpy(B, y, n * sizeof(double)); 
     free(y);
     return;
 }
