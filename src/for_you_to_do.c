@@ -24,7 +24,7 @@
 int mydgetrf(double *A, int *ipiv, int n) 
 {
     /* add your code here */
-    unsigned i = 0, j = 0, k = 0, t = 0;
+    int i = 0, j = 0, k = 0, t = 0;
     int maxind;
     double MAX;
     double* tempA = (double*)malloc(n * sizeof(double));
@@ -95,22 +95,22 @@ int mydgetrf(double *A, int *ipiv, int n)
 void mydtrsv(char UPLO, double *A, double *B, int n, int *ipiv)
 {
     /* add your code here */
-    unsigned i = 0, j = 0;
+    int i = 0, j = 0;
     double* y = (double*)malloc(n * sizeof(double)); 
 
-    if (UPLO == 'L') { 
-        y[0] = B[ipiv[0]]; 
+    if (UPLO == 'L') {
+        y[0] = B[ipiv[0]];
         for (i = 1; i < n; i++) {
             double sum = 0.0;
-            for (j = 0; j < i; j++) {  
+            for (j = 0; j < i; j++) {
                 sum += A[i * n + j] * y[j];
             }
             y[i] = B[ipiv[i]] - sum;
         }
     }
-    if (UPLO == 'U') { 
+    if (UPLO == 'U') {
         y[n - 1] = B[n - 1] / A[n * n - 1];
-        for (i = n - 2; i >= 0; i--) { 
+        for (i = n - 2; i >= 0; i--) {
             double sum = 0.0;
             for (j = i + 1; j < n; j++) {
                 sum += A[i * n + j] * y[j];
@@ -142,7 +142,7 @@ void mydgemm(double *A, double *B, double *C, int n, int i, int j, int k, int b)
     /* In fact this function won't be directly called in the tester code, so you can modify the declaration (parameter list) of mydgemm() if needed. 
     /* you may copy the code from the optimal() function or any of the other functions in your lab1 code (optimized code recommended).*/
     /* add your code here */
-   /* int i_1, j_1, k_1;
+    int i_1, j_1, k_1;
     for (i_1 = 0; i_1 < n; i_1 += 2) {
         for (j_1 = 0; j_1 < n; j_1 += 2) {
             register int t = i_1 * n + j_1;
@@ -174,7 +174,7 @@ void mydgemm(double *A, double *B, double *C, int n, int i, int j, int k, int b)
             C[tt] = c10;
             C[tt + 1] = c11;
         }
-    }*/
+    }
     return;
 }
 
@@ -208,7 +208,61 @@ void mydgemm(double *A, double *B, double *C, int n, int i, int j, int k, int b)
  **/
 int mydgetrf_block(double *A, int *ipiv, int n, int b) 
 {
-    
+    int i = 0, j = 0, k = 0;
+    int max_Aii;
+    int ib;
+    double max;
+    double* temp_Aii = (double*)malloc(n * sizeof(double)); // a temp row for swap
+
+    for (ib = 0; ib < n; ib += b) {
+        for (i = ib; i < ib + b; i++) {
+            max = fabs(A[i * n + i]);
+            max_Aii = i;
+            for (j = i + 1; j < n; j++) {
+                if (fabs(A[j * n + i]) > max) {
+                    max = fabs(A[j * n + i]);
+                    max_Aii = j;
+                }
+            }
+
+            if (max == 0) {
+                return -1;
+            }
+            else {
+                if (max_Aii != i) {
+                    int temp = ipiv[i];
+                    ipiv[i] = ipiv[max_Aii];
+                    ipiv[max_Aii] = temp;
+                    memcpy(temp_Aii, A + i * n, n * sizeof(double));
+                    memcpy(A + i * n, A + max_Aii * n, n * sizeof(double));
+                    memcpy(A + max_Aii * n, temp_Aii, n * sizeof(double));
+                }
+            }
+            for (j = i + 1; j < n; j++) {
+                A[j * n + i] = A[j * n + i] / A[i * n + i];
+                for (k = i + 1; k < ib + b; k++) {
+                    A[j * n + k] -= A[j * n + i] * A[i * n + k];
+                }
+            }
+        }
+
+        for (i = ib; i < ib + b; i++) {
+            for (j = ib + b; j < n; j++) {
+                double sum = 0.0;
+                for (k = ib; k < i; k++) {
+                    sum += A[i * n + k] * A[k * n + j];
+                }
+                A[i * n + j] -= sum;
+            }
+        }
+
+
+        for (i = ib + b; i < n; i += b) {
+            for (j = ib + b; j < n; j += b) {
+                mydgemm(A, A, A, n, i, j, ib, b);
+            }
+        }
+    }
     return 0;
 }
 
