@@ -95,30 +95,31 @@ int mydgetrf(double *A, int *ipiv, int n)
 void mydtrsv(char UPLO, double *A, double *B, int n, int *ipiv)
 {
     /* add your code here */
-    int i = 0, j = 0;
+    int i = 0, j = 0, k = 0;
     double* y = (double*)malloc(n * sizeof(double)); 
 
     if (UPLO == 'L') {
         y[0] = B[ipiv[0]];
         for (i = 1; i < n; i++) {
-            double sum = 0.0;
-            for (j = 0; j < i; j++) {
-                sum += A[i * n + j] * y[j];
+            y[i] = B[ipiv[i]];
+        }
+        for (j = 0; j < n; j++) {
+            double sum = y[i];
+            for (k = 0; k < j; k++) {
+                sum -= B[k] * A[j * n + k];
             }
-            y[i] = B[ipiv[i]] - sum;
+            B[j] = sum;
         }
     }
     if (UPLO == 'U') {
-        y[n - 1] = B[n - 1] / A[n * n - 1];
-        for (i = n - 2; i >= 0; i--) {
-            double sum = 0.0;
-            for (j = i + 1; j < n; j++) {
-                sum += A[i * n + j] * y[j];
+        for (i = n - 1; i >= 0; i--) {
+            double sum = B[i];
+            for (j = n - 1; j > i; j--) {
+                sum -= B[j] * A[i * n + j];
             }
-            y[i] = (B[i] - sum) / A[i * n + i];
+            B[i] = sum / A[i * n + i];
         }
     }
-    memcpy(B, y, n * sizeof(double)); 
     free(y);
     return;
 }
@@ -142,7 +143,7 @@ void mydgemm(double *A, double *B, double *C, int n, int i, int j, int k, int b)
     /* In fact this function won't be directly called in the tester code, so you can modify the declaration (parameter list) of mydgemm() if needed. 
     /* you may copy the code from the optimal() function or any of the other functions in your lab1 code (optimized code recommended).*/
     /* add your code here */
-    int i_1, j_1, k_1;
+   /* int i_1, j_1, k_1;
     for (i_1 = 0; i_1 < n; i_1 += 2) {
         for (j_1 = 0; j_1 < n; j_1 += 2) {
             register int t = i_1 * n + j_1;
@@ -174,7 +175,7 @@ void mydgemm(double *A, double *B, double *C, int n, int i, int j, int k, int b)
             C[tt] = c10;
             C[tt + 1] = c11;
         }
-    }
+    }*/
     return;
 }
 
@@ -208,7 +209,7 @@ void mydgemm(double *A, double *B, double *C, int n, int i, int j, int k, int b)
  **/
 int mydgetrf_block(double *A, int *ipiv, int n, int b) 
 {
-    int i = 0, j = 0, k = 0;
+    /*int i = 0, j = 0, k = 0;
     int max_Aii;
     int ib;
     double max;
@@ -262,7 +263,7 @@ int mydgetrf_block(double *A, int *ipiv, int n, int b)
                 mydgemm(A, A, A, n, i, j, ib, b);
             }
         }
-    }
+    }*/
     return 0;
 }
 
